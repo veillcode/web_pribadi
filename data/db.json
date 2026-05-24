@@ -1,0 +1,22 @@
+{
+  "users": [
+    {
+      "id": "user_ffa37a08726a",
+      "username": "dimas",
+      "email": "dimasaribb@gmail.com",
+      "password": "$2b$12$GEOM1NTrR0hgrmllxOXwKeds1GZsT/VLX6WjhMcdCH34MWD1NP6oG",
+      "createdAt": "2026-05-24T10:38:23.134321+00:00"
+    }
+  ],
+  "profiles": [
+    {
+      "userId": "user_ffa37a08726a",
+      "displayName": "dimas",
+      "bio": "",
+      "avatarColor": "#fb923c",
+      "createdAt": "2026-05-24T10:38:23.134321+00:00",
+      "updatedAt": "2026-05-24T10:38:23.134321+00:00"
+    }
+  ],
+  "files": []
+}

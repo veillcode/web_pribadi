@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veilfile — Manajemen Tugas</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --glass-bg: rgba(255,255,255,0.12);
+    --glass-border: rgba(255,255,255,0.22);
+    --glass-shadow: 0 8px 48px rgba(0,0,0,0.28);
+    --glass-blur: blur(22px);
+    --accent: #a78bfa;
+    --accent2: #60a5fa;
+    --accent3: #f472b6;
+    --text-primary: #f8fafc;
+    --text-secondary: rgba(248,250,252,0.7);
+    --error: #fc8181;
+    --success: #68d391;
+    --input-bg: rgba(255,255,255,0.09);
+    --input-border: rgba(255,255,255,0.18);
+    --radius: 20px;
+    --transition: all 0.38s cubic-bezier(0.4,0,0.2,1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    color: var(--text-primary);
+    overflow-x: hidden;
+    background: #0d0d1a;
+  }
+
+  /* ─── BACKGROUND STATIC ─────────────────────────── */
+ /* GANTI JADI (video) */
+  #bg-wrap {
+    position: fixed; inset: 0; z-index: 0;
+    overflow: hidden;
+  }
+  #bg-wrap video {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 100%; min-height: 100%;
+    object-fit: cover;
+    filter: blur(6px) brightness(0.7);
+  }
+  #bg-overlay {
+    position: fixed; inset: 0; z-index: 1;
+    background: linear-gradient(135deg, rgba(13,13,26,0.55) 0%, rgba(20,10,40,0.5) 100%);
+  }
+
+  /* ─── PAGES ─────────────────────────────────────────── */
+  .page {
+    display: none; position: relative; z-index: 10;
+    min-height: 100vh;
+  }
+  .page.active { display: flex; }
+
+  /* ─── AUTH PAGES ─────────────────────────────────────── */
+  #page-login, #page-register {
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+
+  .auth-wrapper {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; max-width: 480px;
+    animation: fadeUp 0.7s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .glass-card {
+    width: 100%;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.18);
+    padding: 48px 44px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .glass-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  }
+
+  .brand {
+    text-align: center; margin-bottom: 32px;
+  }
+  .brand-logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 56px; height: 56px; border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    margin-bottom: 14px;
+    box-shadow: 0 4px 24px rgba(167,139,250,0.4);
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+  @keyframes logoPulse {
+    0%,100% { box-shadow: 0 4px 24px rgba(167,139,250,0.4); }
+    50% { box-shadow: 0 4px 36px rgba(167,139,250,0.65); }
+  }
+  .brand-logo i { font-size: 24px; color: #fff; }
+  .brand h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+  }
+  .brand p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; font-weight: 300; }
+
+  .form-title {
+    font-size: 18px; font-weight: 600; margin-bottom: 24px;
+    color: var(--text-primary);
+  }
+
+  .field-group { margin-bottom: 18px; }
+  .field-group label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: var(--text-secondary); margin-bottom: 8px;
+    letter-spacing: 0.6px; text-transform: uppercase;
+  }
+  .input-wrap {
+    position: relative;
+  }
+  .input-wrap i.input-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: rgba(255,255,255,0.38); font-size: 15px; pointer-events: none;
+    transition: var(--transition);
+  }
+  .input-wrap input {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    padding: 13px 44px 13px 42px;
+    font-size: 14px; font-family: 'Poppins', sans-serif;
+    color: var(--text-primary);
+    outline: none;
+    transition: var(--transition);
+  }
+  .input-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+  .input-wrap input:focus {
+    border-color: var(--accent);
+    background: rgba(167,139,250,0.1);
+    box-shadow: 0 0 0 3px rgba(167,139,250,0.18);
+  }
+  .input-wrap input:focus ~ i.input-icon,
+  .input-wrap:focus-within i.input-icon { color: var(--accent); }
+
+  .toggle-pw {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    color: rgba(255,255,255,0.38); cursor: pointer; font-size: 15px;
+    transition: var(--transition); z-index: 2;
+    background: none; border: none; padding: 0;
+  }
+  .toggle-pw:hover { color: var(--accent); }
+
+  .msg-box {
+    display: none;
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 12.5px; font-weight: 500; margin-bottom: 16px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+  .msg-box.error   { background: rgba(252,129,129,0.15); border: 1px solid rgba(252,129,129,0.3); color: var(--error); }
+  .msg-box.success { background: rgba(104,211,145,0.15); border: 1px solid rgba(104,211,145,0.3); color: var(--success); }
+  .msg-box.show    { display: flex; align-items: center; gap: 8px; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    border: none; border-radius: 12px; cursor: pointer;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    transition: var(--transition);
+    position: relative; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(167,139,250,0.35);
+    letter-spacing: 0.3px;
+    margin-top: 4px;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0; transition: var(--transition);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(167,139,250,0.5); }
+  .btn-primary:hover::after { opacity: 1; }
+  .btn-primary:active { transform: translateY(0); }
+
+  .auth-switch {
+    text-align: center; margin-top: 22px;
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .auth-switch a {
+    color: var(--accent); text-decoration: none; font-weight: 600;
+    transition: var(--transition);
+  }
+  .auth-switch a:hover { color: var(--accent2); text-shadow: 0 0 12px rgba(167,139,250,0.5); }
+
+  /* ─── DASHBOARD ──────────────────────────────────────── */
+  #page-dashboard {
+    flex-direction: column;
+    background: #0d0d1a;
+    min-height: 100vh;
+  }
+  #page-dashboard.active { display: flex; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+    height: 66px;
+    background: rgba(13,13,26,0.7);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .topbar-brand {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .topbar-logo {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 12px rgba(167,139,250,0.35);
+  }
+  .topbar-logo i { font-size: 16px; color: #fff; }
+  .topbar-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 700;
+    background: linear-gradient(135deg, #fff, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .topbar-user {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 40px; padding: 6px 16px 6px 10px;
+  }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+  }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .btn-logout {
+    background: rgba(252,129,129,0.12); border: 1px solid rgba(252,129,129,0.2);
+    color: var(--error); border-radius: 10px; padding: 8px 14px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: var(--transition);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-logout:hover { background: rgba(252,129,129,0.2); transform: translateY(-1px); }
+
+  .dashboard-body {
+    padding: 36px 28px 60px; max-width: 1400px; margin: 0 auto; width: 100%;
+  }
+
+  .dash-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 36px; flex-wrap: wrap; gap: 16px;
+  }
+  .dash-header h2 {
+    font-size: 26px; font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .dash-header p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+  .stats-row {
+    display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1; min-width: 130px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 20px 22px;
+    backdrop-filter: blur(10px);
+    transition: var(--transition);
+  }
+  .stat-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+  .stat-card .stat-icon {
+    width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; margin-bottom: 12px;
+  }
+  .stat-card:nth-child(1) .stat-icon { background: rgba(167,139,250,0.2); color: var(--accent); }
+  .stat-card:nth-child(2) .stat-icon { background: rgba(96,165,250,0.2); color: var(--accent2); }
+  .stat-card:nth-child(3) .stat-icon { background: rgba(244,114,182,0.2); color: var(--accent3); }
+  .stat-value { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+  .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+  /* ─── UPLOAD ZONE ─────────────────────────────────── */
+  .upload-zone {
+    border: 2px dashed rgba(167,139,250,0.3);
+    border-radius: 18px;
+    padding: 36px;
+    text-align: center;
+    background: rgba(167,139,250,0.04);
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 36px;
+    position: relative; overflow: hidden;
+  }
+  .upload-zone::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at center, rgba(167,139,250,0.06) 0%, transparent 70%);
+    opacity:0; transition: var(--transition);
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(167,139,250,0.09);
+    transform: translateY(-2px);
+  }
+  .upload-zone:hover::before, .upload-zone.dragover::before { opacity: 1; }
+  .upload-zone input { display: none; }
+  .upload-icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(96,165,250,0.15));
+    border: 1px solid rgba(167,139,250,0.25);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 24px; color: var(--accent);
+    transition: var(--transition);
+  }
+  .upload-zone:hover .upload-icon { transform: scale(1.1); background: linear-gradient(135deg, rgba(167,139,250,0.3), rgba(96,165,250,0.25)); }
+  .upload-zone h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .upload-zone p { font-size: 12px; color: var(--text-secondary); }
+  .upload-zone .supported { display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.06); font-size: 11px; color: var(--text-secondary); }
+
+  /* ─── FILE LIST ────────────────────────────────────── */
+  .file-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+  .file-section h3 .badge {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff;
+  }
+
+  .file-list {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .file-card {
+    display: flex; align-items: center; gap: 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 14px; padding: 16px 18px;
+    animation: fadeUp 0.4s ease both;
+    transition: var(--transition);
+    position: relative; overflow: hidden;
+  }
+  .file-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+    border-radius: 3px 0 0 3px;
+  }
+  .file-card:hover { background: rgba(255,255,255,0.09); transform: translateX(4px); box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+
+  .file-icon-wrap {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .file-icon-wrap.pdf    { background: rgba(252,129,129,0.15); color: #fc8181; }
+  .file-icon-wrap.doc    { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+  .file-icon-wrap.ppt    { background: rgba(251,146,60,0.15);  color: #fb923c; }
+  .file-icon-wrap.xls    { background: rgba(104,211,145,0.15); color: #68d391; }
+  .file-icon-wrap.zip    { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+  .file-icon-wrap.txt    { background: rgba(167,139,250,0.15); color: var(--accent); }
+  .file-icon-wrap.img    { background: rgba(244,114,182,0.15); color: var(--accent3); }
+  .file-icon-wrap.other  { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+
+  .file-info { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 4px;
+  }
+  .file-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .file-size { font-size: 11px; color: var(--text-secondary); }
+  .file-date { font-size: 11px; color: var(--text-secondary); }
+  .file-type-badge {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 6px;
+    background: rgba(167,139,250,0.15); color: var(--accent);
+  }
+
+  .file-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-icon {
+    width: 34px; height: 34px; border-radius: 10px; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+    transition: var(--transition);
+    font-family: 'Poppins', sans-serif;
+  }
+  .btn-icon.download { background: rgba(96,165,250,0.12); color: var(--accent2); border: 1px solid rgba(96,165,250,0.2); }
+  .btn-icon.download:hover { background: var(--accent2); color: #fff; }
+  .btn-icon.delete  { background: rgba(252,129,129,0.12); color: var(--error); border: 1px solid rgba(252,129,129,0.2); }
+  .btn-icon.delete:hover  { background: var(--error); color: #fff; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--text-secondary);
+    animation: fadeIn 0.5s ease;
+  }
+  .empty-state i { font-size: 48px; color: rgba(255,255,255,0.1); display: block; margin-bottom: 16px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ─── TOAST ──────────────────────────────────────────── */
+  #toast {
+    position: fixed; bottom: 28px; right: 28px; z-index: 2000;
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 20px; border-radius: 14px;
+    background: rgba(20,20,40,0.9); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    transform: translateY(20px); opacity: 0; pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+    max-width: 320px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; pointer-events: all; }
+  #toast i { font-size: 16px; }
+  #toast.success-toast i { color: var(--success); }
+  #toast.error-toast i   { color: var(--error); }
+
+  /* ─── LOADER ─────────────────────────────────────────── */
+  #page-loader {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0d0d1a; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 20px;
+    transition: opacity 0.6s ease;
+  }
+  #page-loader.hidden { opacity: 0; pointer-events: none; }
+  .loader-logo {
+    width: 64px; height: 64px; border-radius: 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: #fff;
+    animation: logoPulse 1.5s ease-in-out infinite;
+  }
+  .loader-spinner {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid rgba(167,139,250,0.15);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-text { font-size: 13px; color: var(--text-secondary); letter-spacing: 1px; }
+
+  /* ─── RESPONSIVE ─────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .glass-card { padding: 36px 24px 32px; }
+    .dashboard-body { padding: 24px 16px 40px; }
+    .topbar { padding: 0 16px; }
+    .user-name { display: none; }
+    .stats-row { gap: 10px; }
+    .stat-card { padding: 16px; }
+    .file-card { padding: 12px 14px; gap: 12px; }
+  }
+  @media (max-width: 400px) {
+    .glass-card { padding: 28px 18px 24px; }
+    .dash-header h2 { font-size: 20px; }
+    .file-name { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="page-loader">
+  <div class="loader-logo"><i class="fas fa-file-arrow-up"></i></div>
+  <div class="loader-spinner"></div>
+  <div class="loader-text">Memuat Veilfile…</div>
+</div>
+
+<!-- GANTI JADI -->
+<div id="bg-wrap">
+  <video autoplay muted loop playsinline>
+    <source src="background.mp4" type="video/mp4">
+  </video>
+</div>
+<div id="bg-overlay"></div>
+
+<!-- ═══════════════ LOGIN PAGE ═══════════════ -->
+<div id="page-login" class="page active">
+  <div class="auth-wrapper">
+    <div class="glass-card">
+      <div class="brand">
+        <div class="brand-logo"><i class="fas fa-file-arrow-up"></i></div>
+        <h1>Veilfile</h1>
+        <p>File manager anda yang elegan</p>
+      </div>
+      <div class="form-title">Masuk ke Akun</div>
+
+      <div id="login-msg" class="msg-box"></div>
+
+      <div class="field-group">
+        <label>Username atau Email</label>
+        <div class="input-wrap">
+          <input type="text" id="login-user" placeholder="Masukkan username/email" autocomplete="username">
+          <i class="fas fa-user input-icon"></i>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="login-pass" placeholder="Masukkan password" autocomplete="current-password">
+          <i class="fas fa-lock input-icon"></i>
+          <button class="toggle-pw" type="button" onclick="togglePw('login-pass',this)" tabindex="-1">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="doLogin()">
+        <i class="fas fa-arrow-right-to-bracket" style="margin-right:8px"></i>Masuk
+      </button>
+
+      <div class="auth-switch">
+        Belum punya akun? <a href="#" onclick="showPage('register')">Daftar sekarang</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ REGISTER PAGE ═══════════════ -->
+<div id="page-register" class="page">
+  <div class="auth-wrapper">
+    <div class="glass-card">
+      <div class="brand">
+        <div class="brand-logo"><i class="fas fa-file-arrow-up"></i></div>
+        <h1>Veilfile</h1>
+        <p>Buat akun gratis Anda</p>
+      </div>
+      <div class="form-title">Buat Akun Baru</div>
+
+      <div id="reg-msg" class="msg-box"></div>
+
+      <div class="field-group">
+        <label>Username</label>
+        <div class="input-wrap">
+          <input type="text" id="reg-user" placeholder="Pilih username unik" autocomplete="username">
+          <i class="fas fa-user input-icon"></i>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Email</label>
+        <div class="input-wrap">
+          <input type="email" id="reg-email" placeholder="email@contoh.com" autocomplete="email">
+          <i class="fas fa-envelope input-icon"></i>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="reg-pass" placeholder="Buat password kuat" autocomplete="new-password">
+          <i class="fas fa-lock input-icon"></i>
+          <button class="toggle-pw" type="button" onclick="togglePw('reg-pass',this)" tabindex="-1">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Konfirmasi Password</label>
+        <div class="input-wrap">
+          <input type="password" id="reg-pass2" placeholder="Ulangi password Anda" autocomplete="new-password">
+          <i class="fas fa-lock input-icon"></i>
+          <button class="toggle-pw" type="button" onclick="togglePw('reg-pass2',this)" tabindex="-1">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="doRegister()">
+        <i class="fas fa-user-plus" style="margin-right:8px"></i>Daftar Sekarang
+      </button>
+
+      <div class="auth-switch">
+        Sudah punya akun? <a href="#" onclick="showPage('login')">Masuk di sini</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD PAGE ═══════════════ -->
+<div id="page-dashboard" class="page" style="display:none">
+  <nav class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo"><i class="fas fa-file-arrow-up"></i></div>
+      <span class="topbar-title">Veilfile</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-user">
+        <div class="user-avatar" id="dash-avatar">A</div>
+        <span class="user-name" id="dash-username">User</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">
+        <i class="fas fa-arrow-right-from-bracket"></i> Keluar
+      </button>
+    </div>
+  </nav>
+
+  <div class="dashboard-body">
+    <div class="dash-header">
+      <div>
+        <h2>File Tugas Saya</h2>
+        <p id="dash-greeting">Selamat datang kembali!</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-file-lines"></i></div>
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-label">Total Tugas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+        <div class="stat-value" id="stat-today">0</div>
+        <div class="stat-label">Upload Hari Ini</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-hard-drive"></i></div>
+        <div class="stat-value" id="stat-size">0 KB</div>
+        <div class="stat-label">Penyimpanan</div>
+      </div>
+    </div>
+
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="upload-zone"
+         onclick="document.getElementById('file-input').click()"
+         ondrop="handleDrop(event)"
+         ondragover="handleDragOver(event)"
+         ondragleave="handleDragLeave(event)">
+      <input type="file" id="file-input" multiple onchange="handleFiles(this.files)">
+      <div class="upload-icon"><i class="fas fa-file-arrow-up"></i></div>
+      <h3>Seret file tugas ke sini atau klik untuk memilih</h3>
+      <p>Pilih satu atau beberapa file tugas sekaligus dari perangkat Anda</p>
+      <span class="supported">PDF · DOC · PPT · XLS · TXT · ZIP · dan lainnya</span>
+    </div>
+
+    <!-- File List -->
+    <div class="file-section">
+      <h3><i class="fas fa-folder"></i> Semua File Tugas <span class="badge" id="file-count">0</span></h3>
+      <div class="file-list" id="file-list">
+        <div class="empty-state" id="empty-state">
+          <i class="fas fa-folder-open"></i>
+          <p>Belum ada file tugas. Upload file pertama Anda!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"><i class="fas fa-check-circle"></i><span id="toast-msg"></span></div>
+
+<script>
+/* ─── STORAGE ──────────────────────────────── */
+const USERS_KEY   = 'Veilfile_users';
+const SESSION_KEY = 'Veilfile_session';
+
+function getUsers()  { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function getSession(){ return localStorage.getItem(SESSION_KEY) || null; }
+function setSession(u){ localStorage.setItem(SESSION_KEY, u); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
+function getFiles(user){ return JSON.parse(localStorage.getItem('Veilfile_files_' + user) || '[]'); }
+function saveFiles(user, files){ localStorage.setItem('Veilfile_files_' + user, JSON.stringify(files)); }
+
+/* ─── PAGE NAV ─────────────────────────────── */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = '';
+  });
+  const el = document.getElementById('page-' + name);
+  el.classList.add('active');
+  if (name === 'dashboard') el.style.display = 'flex';
+  clearMsgs();
+}
+
+function clearMsgs() {
+  document.querySelectorAll('.msg-box').forEach(m => {
+    m.className = 'msg-box'; m.innerHTML = '';
+  });
+}
+
+/* ─── PASSWORD TOGGLE ──────────────────────── */
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  const icon = btn.querySelector('i');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    inp.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+}
+
+/* ─── MSG HELPERS ──────────────────────────── */
+function showMsg(id, type, icon, text) {
+  const el = document.getElementById(id);
+  el.className = `msg-box ${type} show`;
+  el.innerHTML = `<i class="fas fa-${icon}"></i><span>${text}</span>`;
+}
+
+/* ─── LOGIN ─────────────────────────────────── */
+function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const users = getUsers();
+
+  if (!user || !pass) {
+    showMsg('login-msg', 'error', 'circle-exclamation', 'Harap isi semua kolom.');
+    return;
+  }
+
+  const found = Object.values(users).find(
+    u => u.username.toLowerCase() === user.toLowerCase() || u.email.toLowerCase() === user.toLowerCase()
+  );
+
+  if (!found) {
+    showMsg('login-msg', 'error', 'circle-exclamation', 'Akun belum terdaftar.');
+    return;
+  }
+  if (found.password !== pass) {
+    showMsg('login-msg', 'error', 'circle-xmark', 'Password yang anda masukkan salah.');
+    return;
+  }
+
+  setSession(found.username);
+  showDashboard(found.username);
+}
+
+/* ─── REGISTER ──────────────────────────────── */
+function doRegister() {
+  const user  = document.getElementById('reg-user').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  const users = getUsers();
+
+  if (!user || !email || !pass || !pass2) {
+    showMsg('reg-msg', 'error', 'circle-exclamation', 'Harap isi semua kolom.');
+    return;
+  }
+  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+    showMsg('reg-msg', 'error', 'circle-exclamation', 'Format email tidak valid.');
+    return;
+  }
+  if (users[user.toLowerCase()]) {
+    showMsg('reg-msg', 'error', 'circle-xmark', 'Username sudah digunakan.');
+    return;
+  }
+  if (pass.length < 6) {
+    showMsg('reg-msg', 'error', 'circle-exclamation', 'Password minimal 6 karakter.');
+    return;
+  }
+  if (pass !== pass2) {
+    showMsg('reg-msg', 'error', 'circle-xmark', 'Konfirmasi password tidak cocok.');
+    return;
+  }
+
+  users[user.toLowerCase()] = { username: user, email, password: pass };
+  saveUsers(users);
+  showMsg('reg-msg', 'success', 'circle-check', 'Akun berhasil dibuat! Mengarahkan ke halaman login…');
+  setTimeout(() => {
+    ['reg-user','reg-email','reg-pass','reg-pass2'].forEach(id => document.getElementById(id).value = '');
+    showPage('login');
+  }, 1800);
+}
+
+/* ─── DASHBOARD ──────────────────────────────── */
+function showDashboard(username) {
+  document.getElementById('dash-username').textContent = username;
+  document.getElementById('dash-avatar').textContent = username[0].toUpperCase();
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Selamat pagi' : hour < 17 ? 'Selamat siang' : 'Selamat malam';
+  document.getElementById('dash-greeting').textContent = `${greet}, ${username}! 👋`;
+  renderFiles(username);
+  showPage('dashboard');
+}
+
+function doLogout() {
+  clearSession();
+  document.getElementById('page-dashboard').style.display = 'none';
+  document.getElementById('file-list').innerHTML = '';
+  showPage('login');
+  showToast('Berhasil keluar dari akun.', 'success');
+}
+
+/* ─── FILE TYPE HELPER ──────────────────────── */
+function getFileType(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  if (['pdf'].includes(ext))                        return { type: 'pdf',   icon: 'fa-file-pdf',        label: 'PDF' };
+  if (['doc','docx'].includes(ext))                 return { type: 'doc',   icon: 'fa-file-word',       label: 'Word' };
+  if (['ppt','pptx'].includes(ext))                 return { type: 'ppt',   icon: 'fa-file-powerpoint', label: 'PPT' };
+  if (['xls','xlsx','csv'].includes(ext))           return { type: 'xls',   icon: 'fa-file-excel',      label: 'Excel' };
+  if (['zip','rar','7z','tar','gz'].includes(ext))  return { type: 'zip',   icon: 'fa-file-zipper',     label: 'ZIP' };
+  if (['txt','md','rtf'].includes(ext))             return { type: 'txt',   icon: 'fa-file-lines',      label: 'Teks' };
+  if (['jpg','jpeg','png','gif','webp','svg'].includes(ext)) return { type: 'img', icon: 'fa-file-image', label: 'Gambar' };
+  return { type: 'other', icon: 'fa-file', label: ext.toUpperCase() || 'File' };
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024)          return bytes + ' B';
+  if (bytes < 1024 * 1024)   return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024*1024)).toFixed(2) + ' MB';
+}
+
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+/* ─── FILE LIST RENDER ───────────────────────── */
+let todayUploads = 0;
+let totalBytes   = 0;
+
+function renderFiles(username) {
+  const files = getFiles(username);
+  const list  = document.getElementById('file-list');
+  const empty = document.getElementById('empty-state');
+
+  document.getElementById('file-count').textContent = files.length;
+  document.getElementById('stat-total').textContent = files.length;
+
+  // recalculate total size
+  totalBytes = files.reduce((s, f) => s + (f.size || 0), 0);
+  document.getElementById('stat-size').textContent = formatSize(totalBytes);
+  document.getElementById('stat-today').textContent = todayUploads;
+
+  Array.from(list.querySelectorAll('.file-card')).forEach(c => c.remove());
+
+  if (files.length === 0) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  files.forEach((f, i) => list.appendChild(buildFileCard(f, i)));
+}
+
+function buildFileCard(file, idx) {
+  const { type, icon, label } = getFileType(file.name);
+  const card = document.createElement('div');
+  card.className = 'file-card';
+  card.style.animationDelay = (idx * 0.05) + 's';
+  card.innerHTML = `
+    <div class="file-icon-wrap ${type}"><i class="fas ${icon}"></i></div>
+    <div class="file-info">
+      <div class="file-name" title="${file.name}">${file.name}</div>
+      <div class="file-meta">
+        <span class="file-type-badge">${label}</span>
+        <span class="file-size">${formatSize(file.size || 0)}</span>
+        <span class="file-date">${formatDate(file.date)}</span>
+      </div>
+    </div>
+    <div class="file-actions">
+      <button class="btn-icon download" title="Unduh" onclick="downloadFile(${idx})"><i class="fas fa-download"></i></button>
+      <button class="btn-icon delete"   title="Hapus"  onclick="deleteFile(${idx})"><i class="fas fa-trash"></i></button>
+    </div>`;
+  return card;
+}
+
+function deleteFile(idx) {
+  const username = getSession();
+  const files = getFiles(username);
+  const removed = files.splice(idx, 1)[0];
+  totalBytes -= removed.size || 0;
+  saveFiles(username, files);
+  renderFiles(username);
+  showToast('File berhasil dihapus.', 'success');
+}
+
+function downloadFile(idx) {
+  const username = getSession();
+  const file = getFiles(username)[idx];
+  if (!file || !file.data) {
+    showToast('Data file tidak tersedia.', 'error');
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = file.data;
+  a.download = file.name;
+  a.click();
+  showToast('Mengunduh file…', 'success');
+}
+
+/* ─── UPLOAD ─────────────────────────────────── */
+function handleFiles(fileList) {
+  const username = getSession();
+  const files = getFiles(username);
+  let count = 0;
+  const total = fileList.length;
+
+  Array.from(fileList).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      files.push({
+        name: file.name,
+        size: file.size,
+        data: e.target.result,
+        date: Date.now()
+      });
+      todayUploads++;
+      totalBytes += file.size;
+      count++;
+      saveFiles(username, files);
+      if (count === total) {
+        renderFiles(username);
+        showToast(`${total} file berhasil diupload!`, 'success');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('file-input').value = '';
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+}
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.add('dragover');
+}
+function handleDragLeave() {
+  document.getElementById('upload-zone').classList.remove('dragover');
+}
+
+/* ─── TOAST ──────────────────────────────────── */
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const icon = t.querySelector('i');
+  t.className = 'show ' + type + '-toast';
+  icon.className = type === 'success' ? 'fas fa-circle-check' : 'fas fa-circle-exclamation';
+  document.getElementById('toast-msg').textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3200);
+}
+
+/* ─── ENTER KEY ──────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  if (active.id === 'page-login')    doLogin();
+  if (active.id === 'page-register') doRegister();
+});
+
+/* ─── INIT ───────────────────────────────────── */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('page-loader').classList.add('hidden');
+    const sess = getSession();
+    if (sess) showDashboard(sess);
+    else showPage('login');
+  }, 1200);
+});
+</script>
+</body>
+</html>
