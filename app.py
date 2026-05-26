@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 import json, os, uuid, bcrypt, jwt, re
+from rembg import remove
+from PIL import Image
+import io
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from werkzeug.utils import secure_filename
-from rembg import remove, new_session
-import requests
-from PIL import Image
-import io
 
 # ── Config ────────────────────────────────────────
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
@@ -255,7 +254,6 @@ def delete_folder(folder_id):
     if not folder:
         return jsonify({'error': 'Folder tidak ditemukan.'}), 404
 
-    # Move files in this folder back to root
     for f in db['files']:
         if f.get('folderId') == folder_id:
             f['folderId'] = None
@@ -323,21 +321,18 @@ def update_file(file_id):
     if not file:
         return jsonify({'error': 'File tidak ditemukan.'}), 404
 
-    # Rename
     if 'originalName' in body:
         new_name = body['originalName'].strip()
         if not new_name:
             return jsonify({'error': 'Nama file tidak boleh kosong.'}), 400
-        # Pertahankan ekstensi asli
         old_ext = os.path.splitext(file['originalName'])[1]
         new_ext = os.path.splitext(new_name)[1]
         if not new_ext:
             new_name = new_name + old_ext
         file['originalName'] = new_name
 
-    # Pindah folder
     if 'folderId' in body:
-        file['folderId'] = body['folderId']  # None = root
+        file['folderId'] = body['folderId']
 
     save_db(db)
     return jsonify({'message': 'File berhasil diperbarui.', 'file': file})
@@ -392,15 +387,7 @@ def remove_bg(file_id):
         with open(src_path, 'rb') as f:
             input_data = f.read()
 
-            response = requests.post(
-            'https://api.remove.bg/v1.0/removebg',
-            files={'image_file': ('image', input_data)},
-            data={'size': 'auto'},
-            headers={'X-Api-Key': 'gf4xMfqSYL4aD9JCiR7WeqZP'},
-        )
-            if response.status_code != 200:
-                raise Exception(response.json().get('errors', [{}])[0].get('title', 'Remove.bg error'))
-            output_data = response.content
+        output_data = remove(input_data)
 
         base_name   = os.path.splitext(file['originalName'])[0]
         new_orig    = base_name + '_no-bg.png'

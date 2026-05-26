@@ -1,0 +1,6 @@
+uploads/
+data/
+*.zip
+public/background.mp4
+__pycache__/
+*.pyc

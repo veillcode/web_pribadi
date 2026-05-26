@@ -18,5 +18,120 @@
       "updatedAt": "2026-05-24T10:38:23.134321+00:00"
     }
   ],
-  "files": []
+  "files": [
+    {
+      "id": "file_c7c43eaaad94",
+      "userId": "user_ffa37a08726a",
+      "originalName": "WhatsApp Video 2026-05-23 at 09.27.19(1).mp4",
+      "storedName": "d9d609eb973d450aa03595cc1f11ba9a.mp4",
+      "size": 1158962,
+      "uploadedAt": "2026-05-24T15:00:52.495123+00:00"
+    },
+    {
+      "id": "file_eda1f53b03ca",
+      "userId": "user_ffa37a08726a",
+      "originalName": "WhatsApp Video 2026-05-23 at 09.27.19.mp4",
+      "storedName": "187a326c8bd541c59170dc855cad7aed.mp4",
+      "size": 2088646,
+      "uploadedAt": "2026-05-24T15:00:52.510237+00:00"
+    },
+    {
+      "id": "file_0ddc93e4ef3e",
+      "userId": "user_ffa37a08726a",
+      "originalName": "umayjas.mp4",
+      "storedName": "e4363498f31944f4a5feb26abc6f3474.mp4",
+      "size": 1162375,
+      "uploadedAt": "2026-05-24T15:00:52.521533+00:00"
+    },
+    {
+      "id": "file_c69c5fc908e4",
+      "userId": "user_ffa37a08726a",
+      "originalName": "WhatsApp Video 2026-05-23 at 09.27.16.mp4",
+      "storedName": "4248d969fa5043f4a2a57e6bcfcea097.mp4",
+      "size": 1896999,
+      "uploadedAt": "2026-05-24T15:00:52.535532+00:00"
+    },
+    {
+      "id": "file_e9de698d01da",
+      "userId": "user_ffa37a08726a",
+      "originalName": "WhatsApp Video 2026-05-23 at 09.27.19(1).mp4",
+      "storedName": "c7264301db274f5781436747d2ade09e.mp4",
+      "size": 1158962,
+      "folderId": null,
+      "uploadedAt": "2026-05-24T17:01:02.800109+00:00"
+    },
+    {
+      "id": "file_066202973b28",
+      "userId": "user_ffa37a08726a",
+      "originalName": "WhatsApp Video 2026-05-23 at 09.27.19.mp4",
+      "storedName": "9d968c6a57ea40f287666f9113ae23f4.mp4",
+      "size": 2088646,
+      "folderId": null,
+      "uploadedAt": "2026-05-24T17:01:02.824703+00:00"
+    },
+    {
+      "id": "file_4fa302e366ea",
+      "userId": "user_ffa37a08726a",
+      "originalName": "umayjas.mp4",
+      "storedName": "2e93d72179d74a9598d2282bcac0bb23.mp4",
+      "size": 1162375,
+      "folderId": null,
+      "uploadedAt": "2026-05-24T17:01:02.895664+00:00"
+    },
+    {
+      "id": "file_21efbca03ec3",
+      "userId": "user_ffa37a08726a",
+      "originalName": "WhatsApp Video 2026-05-23 at 09.27.16.mp4",
+      "storedName": "a92f9d754c964bb7a009f405196b0de6.mp4",
+      "size": 1896999,
+      "folderId": null,
+      "uploadedAt": "2026-05-24T17:01:02.954476+00:00"
+    },
+    {
+      "id": "file_b9d448ad4d74",
+      "userId": "user_ffa37a08726a",
+      "originalName": "harley.jpg",
+      "storedName": "af8b513194a3459583bc311dc6705e45.jpg",
+      "size": 129135,
+      "folderId": null,
+      "uploadedAt": "2026-05-26T08:20:45.335656+00:00"
+    },
+    {
+      "id": "file_3223aa732929",
+      "userId": "user_ffa37a08726a",
+      "originalName": "harley_no-bg.png",
+      "storedName": "a0a47df8a00c4c589946b632e8829b73.png",
+      "size": 287593,
+      "folderId": null,
+      "uploadedAt": "2026-05-26T08:35:12.710159+00:00"
+    },
+    {
+      "id": "file_df38798fa826",
+      "userId": "user_ffa37a08726a",
+      "originalName": "porch.png",
+      "storedName": "553aea49cd084a00a6cd350747689504.avif",
+      "size": 18484,
+      "folderId": null,
+      "uploadedAt": "2026-05-26T08:42:08.127875+00:00"
+    },
+    {
+      "id": "file_265158338490",
+      "userId": "user_ffa37a08726a",
+      "originalName": "input.png",
+      "storedName": "52899336a7d3471db41db3a7db24e6b0.png",
+      "size": 247534,
+      "folderId": null,
+      "uploadedAt": "2026-05-26T09:23:31.930873+00:00"
+    },
+    {
+      "id": "file_d61df3bbfe73",
+      "userId": "user_ffa37a08726a",
+      "originalName": "input_no-bg.png",
+      "storedName": "1cc0b5c27ad04e758a0d1c2358f4726e.png",
+      "size": 1648815,
+      "folderId": null,
+      "uploadedAt": "2026-05-26T09:23:55.356636+00:00"
+    }
+  ],
+  "folders": []
 }
